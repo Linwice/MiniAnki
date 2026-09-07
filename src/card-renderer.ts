@@ -33,18 +33,19 @@ async function cacheAll(names: string[]): Promise<{ urls: Map<string, string>; m
 }
 
 function rewriteHtmlMedia(html: string, urls: ReadonlyMap<string, string>): string {
-  const document = new DOMParser().parseFromString(removeSoundMarkers(html), "text/html");
+  const sanitized = DOMPurify.sanitize(removeSoundMarkers(html), {
+    FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "button"],
+    FORBID_ATTR: ["srcdoc", "srcset"],
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+  });
+  const document = new DOMParser().parseFromString(sanitized, "text/html");
   for (const element of document.querySelectorAll<HTMLElement>("img[src], audio[src], video[src], source[src]")) {
     const name = normalizeMediaName(element.getAttribute("src") ?? "");
     if (name && urls.has(name)) element.setAttribute("src", urls.get(name)!);
     element.removeAttribute("srcset");
     element.removeAttribute("autoplay");
   }
-  return DOMPurify.sanitize(document.body.innerHTML, {
-    FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "button"],
-    FORBID_ATTR: ["srcdoc", "srcset"],
-    ALLOW_UNKNOWN_PROTOCOLS: false,
-  });
+  return document.body.innerHTML;
 }
 
 export async function renderCardSide(
@@ -68,7 +69,7 @@ export async function renderCardSide(
     img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}
   </style><style>${safeCss}</style><div id="card-content">${safeHtml}</div><style>
     #card-content{width:calc(100% / var(--content-scale, 1));zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
-    #card-content,#card-content *{background:transparent!important;background-color:transparent!important;background-image:none!important}
+    #card-content,#card-content *{color:#000!important;background:transparent!important;background-color:transparent!important;background-image:none!important}
   </style>`;
 
   return {
