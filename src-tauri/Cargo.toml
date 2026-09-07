@@ -1,6 +1,6 @@
 [package]
 name = "mini-anki"
-version = "0.2.1"
+version = "0.3.0"
 description = "A minimal remote Anki reviewer"
 authors = ["Mini Anki contributors"]
 edition = "2021"
@@ -19,5 +19,5 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 sha2 = "0.10"
-tauri = { version = "2", features = ["protocol-asset"] }
+tauri = { version = "2", features = ["protocol-asset", "tray-icon"] }
 tauri-plugin-global-shortcut = "2.3.2"

@@ -5,7 +5,11 @@ mod settings;
 use anki_client::{AnkiClient, CurrentCard};
 use serde::Serialize;
 use std::sync::RwLock;
-use tauri::{AppHandle, Manager, State};
+use tauri::{
+    menu::{Menu, MenuItem},
+    tray::TrayIconBuilder,
+    AppHandle, Emitter, Manager, State,
+};
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
 struct AppState {
@@ -27,6 +31,21 @@ impl AppState {
 struct HealthStatus {
     api_version: u8,
     in_review: bool,
+}
+
+fn show_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+    }
+}
+
+fn show_panel_from_tray(app: &AppHandle, event: &str) {
+    show_main_window(app);
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.emit(event, ());
+    }
 }
 
 #[tauri::command]
@@ -142,6 +161,34 @@ pub fn run() {
                 settings: RwLock::new(settings::load(app.handle())),
             };
             app.manage(state);
+
+            let show_item = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
+            let settings_item = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
+            let decks_item = MenuItem::with_id(app, "decks", "选择牌组", true, None::<&str>)?;
+            let hide_item = MenuItem::with_id(app, "hide", "隐藏窗口", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+            let menu = Menu::with_items(
+                app,
+                &[&show_item, &settings_item, &decks_item, &hide_item, &quit_item],
+            )?;
+            TrayIconBuilder::new()
+                .icon(app.default_window_icon().expect("application icon is configured").clone())
+                .tooltip("Mini Anki")
+                .menu(&menu)
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| match event.id().as_ref() {
+                    "show" => show_main_window(app),
+                    "settings" => show_panel_from_tray(app, "open-settings"),
+                    "decks" => show_panel_from_tray(app, "open-decks"),
+                    "hide" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.hide();
+                        }
+                    }
+                    "quit" => app.exit(0),
+                    _ => {}
+                })
+                .build(app)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

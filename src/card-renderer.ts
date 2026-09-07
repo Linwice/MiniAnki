@@ -48,7 +48,7 @@ function rewriteHtmlMedia(html: string, urls: ReadonlyMap<string, string>): stri
 }
 
 export async function renderCardSide(
-  frame: HTMLIFrameElement,
+  surface: HTMLElement,
   html: string,
   css: string,
   sideSounds: string[],
@@ -61,11 +61,14 @@ export async function renderCardSide(
   const rewrittenCss = rewriteCssMedia(css, urls);
   const safeCss = rewrittenCss.replaceAll("<", "\\3C ");
 
-  frame.srcdoc = `<!doctype html>
-    <html><head><meta charset="utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src asset: http://asset.localhost data:; media-src asset: http://asset.localhost data:; font-src asset: http://asset.localhost data:; style-src 'unsafe-inline'">
-    <style>${safeCss}html,body{margin:0;min-height:100%;color:inherit}.card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}html,body,body.card{background:transparent!important;background-color:transparent!important;background-image:none!important}</style>
-    </head><body class="card">${safeHtml}</body></html>`;
+  const root = surface.shadowRoot ?? surface.attachShadow({ mode: "open" });
+  root.innerHTML = `<style>
+    :host{display:block;min-height:100%;color:inherit}
+    .card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}
+    img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}
+  </style><style>${safeCss}</style>${safeHtml}<style>
+    :host,.card{background:transparent!important;background-color:transparent!important;background-image:none!important}
+  </style>`;
 
   return {
     audioUrls: soundNames.map((name) => urls.get(name)).filter((url): url is string => Boolean(url)),

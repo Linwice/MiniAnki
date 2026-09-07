@@ -8,19 +8,9 @@
   </head>
   <body>
     <main class="app-shell">
-      <header class="topbar" data-tauri-drag-region>
-        <span id="deck-name" data-tauri-drag-region>Mini Anki</span>
-        <span class="topbar-actions">
-          <button id="deck-button" class="icon-button" aria-label="选择牌组">▤</button>
-          <button id="settings-button" class="icon-button" aria-label="设置">⚙</button>
-          <button id="hide-button" class="icon-button" aria-label="隐藏">—</button>
-        </span>
-      </header>
-
       <section id="review-view" class="review-view">
         <div id="status" class="status" role="status">正在连接…</div>
-        <iframe id="card-frame" class="card-frame" title="Anki 卡片" sandbox=""></iframe>
-        <div id="answer-actions" class="answer-actions" aria-label="评分按钮"></div>
+        <div id="card-surface" class="card-surface" aria-label="Anki 卡片"></div>
         <div class="shortcut-hint">Space 翻面 · R 重播 · Esc 隐藏 · Alt+Shift+A 呼出</div>
       </section>
 

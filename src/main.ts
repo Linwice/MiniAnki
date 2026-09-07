@@ -1,13 +1,12 @@
 import "./styles.css";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { renderCardSide } from "./card-renderer";
 import type { CurrentCard, HealthStatus, PublicSettings } from "./types";
 
-const deckName = document.querySelector<HTMLSpanElement>("#deck-name")!;
 const status = document.querySelector<HTMLDivElement>("#status")!;
-const frame = document.querySelector<HTMLIFrameElement>("#card-frame")!;
-const answerActions = document.querySelector<HTMLDivElement>("#answer-actions")!;
+const surface = document.querySelector<HTMLDivElement>("#card-surface")!;
 const reviewView = document.querySelector<HTMLElement>("#review-view")!;
 const settingsView = document.querySelector<HTMLElement>("#settings-view")!;
 const deckView = document.querySelector<HTMLElement>("#deck-view")!;
@@ -32,13 +31,6 @@ function setStatus(message: string, isError = false): void {
 
 function messageFrom(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
-}
-
-function labelsFor(buttons: number[]): Map<number, string> {
-  if (buttons.length >= 4) return new Map([[1, "Again"], [2, "Hard"], [3, "Good"], [4, "Easy"]]);
-  if (buttons.length === 3) return new Map([[1, "Again"], [2, "Good"], [3, "Easy"]]);
-  if (buttons.length === 2) return new Map([[1, "Again"], [2, "Good"]]);
-  return new Map(buttons.map((button) => [button, `评分 ${button}`]));
 }
 
 async function playAudio(urls = currentAudioUrls): Promise<void> {
@@ -75,51 +67,37 @@ function showPanel(panel: "review" | "settings" | "deck"): void {
 
 async function displaySide(html: string, sounds: string[], autoPlay: boolean): Promise<string[]> {
   if (!currentCard) return [];
-  const rendered = await renderCardSide(frame, html, currentCard.css, sounds);
+  const rendered = await renderCardSide(surface, html, currentCard.css, sounds);
   currentAudioUrls = rendered.audioUrls;
   if (autoPlay && rendered.audioUrls.length) void playAudio(rendered.audioUrls);
   return rendered.missingMedia;
 }
 
-function renderAnswerButtons(): void {
-  answerActions.replaceChildren();
-  if (!showingAnswer || !currentCard) return;
-  const labels = labelsFor(currentCard.buttons);
-  for (const ease of currentCard.buttons) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.textContent = `${ease} ${labels.get(ease) ?? "评分"}`;
-    button.disabled = busy;
-    button.addEventListener("click", () => void answer(ease));
-    answerActions.append(button);
-  }
+function clearCard(): void {
+  surface.shadowRoot?.replaceChildren();
 }
 
 async function loadCurrent(): Promise<void> {
   busy = true;
-  renderAnswerButtons();
   setStatus("正在读取当前卡片…");
   try {
     currentCard = await invoke<CurrentCard | null>("load_current_card");
     showingAnswer = false;
     if (!currentCard) {
-      deckName.textContent = "Mini Anki";
-      frame.srcdoc = "";
+      clearCard();
       setStatus("请选择要复习的牌组");
       await openDecks();
       return;
     }
-    deckName.textContent = currentCard.deckName;
     const missing = await displaySide(currentCard.question, currentCard.questionSounds, true);
     await invoke("start_card_timer", { expectedCardId: currentCard.cardId });
     setStatus(missing.length ? `媒体不存在：${missing.join(", ")}` : `${currentCard.modelName} · Space 显示答案`, missing.length > 0);
   } catch (error) {
     currentCard = null;
-    frame.srcdoc = "";
+    clearCard();
     setStatus(messageFrom(error), true);
   } finally {
     busy = false;
-    renderAnswerButtons();
   }
 }
 
@@ -137,14 +115,12 @@ async function showAnswer(): Promise<void> {
     await loadCurrent();
   } finally {
     busy = false;
-    renderAnswerButtons();
   }
 }
 
 async function answer(ease: number): Promise<void> {
   if (busy || !currentCard || !showingAnswer || !currentCard.buttons.includes(ease)) return;
   busy = true;
-  renderAnswerButtons();
   setStatus("正在提交评分…");
   try {
     currentCard = await invoke<CurrentCard | null>("answer_card", {
@@ -153,12 +129,10 @@ async function answer(ease: number): Promise<void> {
     });
     showingAnswer = false;
     if (!currentCard) {
-      deckName.textContent = "Mini Anki";
-      frame.srcdoc = "";
+      clearCard();
       currentAudioUrls = [];
       setStatus("当前复习已完成");
     } else {
-      deckName.textContent = currentCard.deckName;
       const missing = await displaySide(currentCard.question, currentCard.questionSounds, true);
       await invoke("start_card_timer", { expectedCardId: currentCard.cardId });
       setStatus(missing.length ? `媒体不存在：${missing.join(", ")}` : `${currentCard.modelName} · Space 显示答案`, missing.length > 0);
@@ -168,7 +142,6 @@ async function answer(ease: number): Promise<void> {
     await loadCurrent();
   } finally {
     busy = false;
-    renderAnswerButtons();
   }
 }
 
@@ -236,12 +209,12 @@ deckForm.addEventListener("submit", async (event) => {
   }
 });
 
-document.querySelector("#settings-button")!.addEventListener("click", () => void openSettings());
-document.querySelector("#deck-button")!.addEventListener("click", () => void openDecks());
 document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
-document.querySelector("#hide-button")!.addEventListener("click", () => void getCurrentWindow().hide());
 opacityInput.addEventListener("input", () => applyOpacity(opacityInput.value));
+
+void listen("open-settings", () => void openSettings());
+void listen("open-decks", () => void openDecks());
 
 window.addEventListener("keydown", (event) => {
   if (!settingsView.classList.contains("hidden") || !deckView.classList.contains("hidden")) return;

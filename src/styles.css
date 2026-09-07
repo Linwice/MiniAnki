@@ -16,48 +16,13 @@ button, input { font: inherit; }
   overflow: hidden;
 }
 
-.topbar {
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 12px;
-  background: rgba(255, 255, 255, 0.035);
-  color: #aeb8c5;
-  font-size: 12px;
-  user-select: none;
-}
-
-.topbar-actions { display: flex; height: 100%; }
-.icon-button {
-  width: 36px;
-  border: 0;
-  color: #aeb8c5;
-  background: transparent;
-  cursor: pointer;
-}
-.icon-button:hover { color: white; background: rgba(255, 255, 255, 0.08); }
-
-.review-view { height: calc(100% - 34px); display: flex; flex-direction: column; }
+.review-view { height: 100%; display: flex; flex-direction: column; }
 .status { padding: 6px 12px 0; min-height: 24px; color: #8f9bab; font-size: 12px; }
 .status.error { color: #ff8e8e; }
-.card-frame { flex: 1; min-height: 0; width: 100%; border: 0; background: transparent; color-scheme: dark; }
-.answer-actions { min-height: 42px; display: flex; gap: 6px; padding: 5px 10px; justify-content: center; }
-.answer-actions button {
-  flex: 1;
-  max-width: 94px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 7px;
-  padding: 6px 4px;
-  color: #dce5ef;
-  background: #282f39;
-  cursor: pointer;
-}
-.answer-actions button:hover { background: #374251; }
-.answer-actions button:disabled { opacity: 0.5; cursor: default; }
+.card-surface { flex: 1; min-height: 0; width: 100%; overflow: auto; background: transparent; color-scheme: dark; }
 .shortcut-hint { padding: 0 10px 6px; text-align: center; color: #687585; font-size: 10px; }
 
-.panel-view { height: calc(100% - 34px); padding: 12px 14px; overflow: auto; }
+.panel-view { height: 100%; padding: 12px 14px; overflow: auto; }
 .panel-view form { display: grid; gap: 9px; }
 .panel-view label { display: grid; gap: 4px; color: #b9c3ce; font-size: 12px; }
 .panel-view input, .panel-view select {
@@ -81,5 +46,4 @@ button, input { font: inherit; }
 @media (max-height: 220px) {
   .shortcut-hint { display: none; }
   .status { padding-top: 3px; min-height: 19px; }
-  .answer-actions { min-height: 36px; padding-block: 3px; }
 }
