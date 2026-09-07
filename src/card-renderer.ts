@@ -68,7 +68,7 @@ export async function renderCardSide(
     .card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}
     img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}
   </style><style>${safeCss}</style><div id="card-content">${safeHtml}</div><style>
-    #card-content{width:calc(100% / var(--content-scale, 1));zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
+    #card-content{zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
     #card-content,#card-content *{color:#000!important;background:transparent!important;background-color:transparent!important;background-image:none!important}
   </style>`;
 

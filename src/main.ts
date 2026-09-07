@@ -15,8 +15,6 @@ const deckSelect = document.querySelector<HTMLSelectElement>("#deck-select")!;
 const settingsForm = document.querySelector<HTMLFormElement>("#settings-form")!;
 const baseUrlInput = document.querySelector<HTMLInputElement>("#base-url")!;
 const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key")!;
-const textSizeInput = document.querySelector<HTMLInputElement>("#text-size")!;
-const textSizeValue = document.querySelector<HTMLOutputElement>("#text-size-value")!;
 const textOpacityInput = document.querySelector<HTMLInputElement>("#text-opacity")!;
 const textOpacityValue = document.querySelector<HTMLOutputElement>("#text-opacity-value")!;
 
@@ -55,10 +53,16 @@ async function playAudio(urls = currentAudioUrls): Promise<void> {
 
 function applyTextSize(value: string): void {
   const parsed = Number(value);
-  const pixels = Number.isFinite(parsed) ? Math.min(40, Math.max(10, parsed)) : 15;
+  const pixels = Number.isFinite(parsed) ? Math.min(96, Math.max(1, parsed)) : 15;
   surface.style.setProperty("--content-scale", String(pixels / 15));
-  textSizeInput.value = String(pixels);
-  textSizeValue.value = `${pixels}px`;
+}
+
+function adjustTextSize(change: number): void {
+  const stored = Number(localStorage.getItem("text-size") ?? "15");
+  const current = Number.isFinite(stored) ? Math.min(96, Math.max(1, stored)) : 15;
+  const next = Math.min(96, Math.max(1, current + change));
+  applyTextSize(String(next));
+  localStorage.setItem("text-size", String(next));
 }
 
 function applyTextOpacity(value: string): void {
@@ -220,10 +224,6 @@ deckForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
-textSizeInput.addEventListener("input", () => {
-  applyTextSize(textSizeInput.value);
-  localStorage.setItem("text-size", textSizeInput.value);
-});
 textOpacityInput.addEventListener("input", () => {
   applyTextOpacity(textOpacityInput.value);
   localStorage.setItem("text-opacity", textOpacityInput.value);
@@ -231,6 +231,8 @@ textOpacityInput.addEventListener("input", () => {
 
 void listen("open-settings", () => void openSettings());
 void listen("open-decks", () => void openDecks());
+void listen("increase-text-size", () => adjustTextSize(1));
+void listen("decrease-text-size", () => adjustTextSize(-1));
 
 window.addEventListener("keydown", (event) => {
   if (!settingsView.classList.contains("hidden") || !deckView.classList.contains("hidden")) return;

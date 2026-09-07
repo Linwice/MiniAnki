@@ -133,7 +133,7 @@ async fn cache_media(
 }
 
 pub fn run() {
-    let toggle_shortcut = Shortcut::new(Some(Modifiers::ALT | Modifiers::SHIFT), Code::KeyA);
+    let toggle_shortcut = Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyX);
     let handler_shortcut = toggle_shortcut.clone();
     let shortcut_plugin = tauri_plugin_global_shortcut::Builder::new()
         .with_shortcut(toggle_shortcut)
@@ -165,11 +165,21 @@ pub fn run() {
             let show_item = MenuItem::with_id(app, "show", "显示窗口", true, None::<&str>)?;
             let settings_item = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
             let decks_item = MenuItem::with_id(app, "decks", "选择牌组", true, None::<&str>)?;
+            let increase_text_item = MenuItem::with_id(app, "increase-text", "放大文字", true, None::<&str>)?;
+            let decrease_text_item = MenuItem::with_id(app, "decrease-text", "缩小文字", true, None::<&str>)?;
             let hide_item = MenuItem::with_id(app, "hide", "隐藏窗口", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
             let menu = Menu::with_items(
                 app,
-                &[&show_item, &settings_item, &decks_item, &hide_item, &quit_item],
+                &[
+                    &show_item,
+                    &settings_item,
+                    &decks_item,
+                    &increase_text_item,
+                    &decrease_text_item,
+                    &hide_item,
+                    &quit_item,
+                ],
             )?;
             TrayIconBuilder::new()
                 .icon(app.default_window_icon().expect("application icon is configured").clone())
@@ -180,6 +190,8 @@ pub fn run() {
                     "show" => show_main_window(app),
                     "settings" => show_panel_from_tray(app, "open-settings"),
                     "decks" => show_panel_from_tray(app, "open-decks"),
+                    "increase-text" => show_panel_from_tray(app, "increase-text-size"),
+                    "decrease-text" => show_panel_from_tray(app, "decrease-text-size"),
                     "hide" => {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.hide();

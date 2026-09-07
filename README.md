@@ -5,9 +5,9 @@
 ## 当前范围
 
 - 仅显示模板文字和多媒体；强制黑色文字，无顶部操作区、无边框、无阴影、置顶及自由缩放窗口。
-- 支持鼠标拖动窗口，以及文字大小和内容透明度调节。
+- 支持鼠标滚轮滚动和鼠标拖动窗口；托盘右键可放大或缩小文字（最小 1px）。
 - `Space` 翻面，数字键按当前 Anki 按钮评分，`R` 重播，`Esc` 隐藏。
-- `Alt+Shift+A` 在任意程序中呼出或隐藏窗口。
+- `Ctrl+Alt+X` 在任意程序中呼出或隐藏窗口。
 - Windows 托盘图标右键可打开设置、选择牌组、显示、隐藏或退出。
 - 显示普通 Anki HTML/CSS，支持图片和 `[sound:文件名]` 音频。
 - 媒体首次读取后缓存在 Windows；API key 保存在 Windows Credential Manager。
@@ -48,7 +48,7 @@ corepack prepare pnpm@11.19.0 --activate
 ./scripts/windows-dev.ps1
 ```
 
-首次打开后填写 Mac 的 Tailscale Serve HTTPS 地址及相同的 AnkiConnect API key。点击标题栏的牌组按钮即可从 Windows 选择牌组并开始复习。
+首次打开后填写 Mac 的 Tailscale Serve HTTPS 地址及相同的 AnkiConnect API key。右键 Windows 托盘图标，选择“选择牌组”即可开始复习。
 
 构建安装包：
 
