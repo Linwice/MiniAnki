@@ -1,4 +1,5 @@
 const SOUND_PATTERN = /\[sound:([^\]\r\n]+)]/gi;
+const ANKI_PLAY_PATTERN = /\[anki:play:[qa]:\d+]/gi;
 const CSS_URL_PATTERN = /url\(\s*(["']?)([^"')]+)\1\s*\)/gi;
 
 export function extractSoundFilenames(html: string): string[] {
@@ -6,7 +7,7 @@ export function extractSoundFilenames(html: string): string[] {
 }
 
 export function removeSoundMarkers(html: string): string {
-  return html.replace(SOUND_PATTERN, "");
+  return html.replace(SOUND_PATTERN, "").replace(ANKI_PLAY_PATTERN, "");
 }
 
 export function normalizeMediaName(value: string): string | null {
@@ -54,4 +55,3 @@ export function rewriteCssMedia(css: string, urls: ReadonlyMap<string, string>):
     return name && urls.has(name) ? `url("${urls.get(name)}")` : whole;
   });
 }
-

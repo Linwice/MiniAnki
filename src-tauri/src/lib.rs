@@ -63,6 +63,18 @@ async fn health_check(state: State<'_, AppState>) -> Result<HealthStatus, String
 }
 
 #[tauri::command]
+async fn list_decks(state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    let base_url = state.base_url()?;
+    state.client.deck_names(&base_url).await
+}
+
+#[tauri::command]
+async fn start_deck_review(state: State<'_, AppState>, name: String) -> Result<(), String> {
+    let base_url = state.base_url()?;
+    state.client.start_deck_review(&base_url, &name).await
+}
+
+#[tauri::command]
 async fn load_current_card(state: State<'_, AppState>) -> Result<Option<CurrentCard>, String> {
     let base_url = state.base_url()?;
     state.client.current(&base_url).await
@@ -136,6 +148,8 @@ pub fn run() {
             load_settings,
             save_settings,
             health_check,
+            list_decks,
+            start_deck_review,
             load_current_card,
             start_card_timer,
             show_answer,

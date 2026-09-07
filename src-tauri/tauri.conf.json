@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Mini Anki",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "com.minianki.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -16,10 +16,11 @@
         "title": "Mini Anki",
         "width": 420,
         "height": 270,
-        "minWidth": 420,
-        "minHeight": 270,
-        "resizable": false,
+        "minWidth": 280,
+        "minHeight": 180,
+        "resizable": true,
         "decorations": false,
+        "transparent": true,
         "alwaysOnTop": true,
         "center": true,
         "shadow": true
@@ -45,4 +46,3 @@
     ]
   }
 }
-

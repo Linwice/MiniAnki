@@ -10,9 +10,14 @@ const frame = document.querySelector<HTMLIFrameElement>("#card-frame")!;
 const answerActions = document.querySelector<HTMLDivElement>("#answer-actions")!;
 const reviewView = document.querySelector<HTMLElement>("#review-view")!;
 const settingsView = document.querySelector<HTMLElement>("#settings-view")!;
+const deckView = document.querySelector<HTMLElement>("#deck-view")!;
+const deckForm = document.querySelector<HTMLFormElement>("#deck-form")!;
+const deckSelect = document.querySelector<HTMLSelectElement>("#deck-select")!;
 const settingsForm = document.querySelector<HTMLFormElement>("#settings-form")!;
 const baseUrlInput = document.querySelector<HTMLInputElement>("#base-url")!;
 const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key")!;
+const opacityInput = document.querySelector<HTMLInputElement>("#opacity")!;
+const opacityValue = document.querySelector<HTMLOutputElement>("#opacity-value")!;
 
 let currentCard: CurrentCard | null = null;
 let showingAnswer = false;
@@ -54,9 +59,22 @@ async function playAudio(urls = currentAudioUrls): Promise<void> {
   }
 }
 
-async function displaySide(html: string, autoPlay: boolean): Promise<string[]> {
+function applyOpacity(value: string): void {
+  const percent = Math.min(100, Math.max(35, Number(value) || 96));
+  document.documentElement.style.setProperty("--window-opacity", String(percent / 100));
+  opacityInput.value = String(percent);
+  opacityValue.value = `${percent}%`;
+}
+
+function showPanel(panel: "review" | "settings" | "deck"): void {
+  reviewView.classList.toggle("hidden", panel !== "review");
+  settingsView.classList.toggle("hidden", panel !== "settings");
+  deckView.classList.toggle("hidden", panel !== "deck");
+}
+
+async function displaySide(html: string, sounds: string[], autoPlay: boolean): Promise<string[]> {
   if (!currentCard) return [];
-  const rendered = await renderCardSide(frame, html, currentCard.css);
+  const rendered = await renderCardSide(frame, html, currentCard.css, sounds);
   currentAudioUrls = rendered.audioUrls;
   if (autoPlay && rendered.audioUrls.length) void playAudio(rendered.audioUrls);
   return rendered.missingMedia;
@@ -86,11 +104,12 @@ async function loadCurrent(): Promise<void> {
     if (!currentCard) {
       deckName.textContent = "Mini Anki";
       frame.srcdoc = "";
-      setStatus("Mac 上的 Anki 尚未进入复习页面");
+      setStatus("请选择要复习的牌组");
+      await openDecks();
       return;
     }
     deckName.textContent = currentCard.deckName;
-    const missing = await displaySide(currentCard.question, true);
+    const missing = await displaySide(currentCard.question, currentCard.questionSounds, true);
     await invoke("start_card_timer", { expectedCardId: currentCard.cardId });
     setStatus(missing.length ? `媒体不存在：${missing.join(", ")}` : `${currentCard.modelName} · Space 显示答案`, missing.length > 0);
   } catch (error) {
@@ -110,7 +129,7 @@ async function showAnswer(): Promise<void> {
   try {
     await invoke("show_answer", { expectedCardId: currentCard.cardId });
     showingAnswer = true;
-    const missing = await displaySide(currentCard.answer, true);
+    const missing = await displaySide(currentCard.answer, currentCard.answerSounds, true);
     setStatus(missing.length ? `媒体不存在：${missing.join(", ")}` : "请选择评分", missing.length > 0);
   } catch (error) {
     setStatus(messageFrom(error), true);
@@ -139,7 +158,7 @@ async function answer(ease: number): Promise<void> {
       setStatus("当前复习已完成");
     } else {
       deckName.textContent = currentCard.deckName;
-      const missing = await displaySide(currentCard.question, true);
+      const missing = await displaySide(currentCard.question, currentCard.questionSounds, true);
       await invoke("start_card_timer", { expectedCardId: currentCard.cardId });
       setStatus(missing.length ? `媒体不存在：${missing.join(", ")}` : `${currentCard.modelName} · Space 显示答案`, missing.length > 0);
     }
@@ -156,14 +175,33 @@ async function openSettings(): Promise<void> {
   const settings = await invoke<PublicSettings>("load_settings");
   baseUrlInput.value = settings.baseUrl;
   apiKeyInput.value = "";
-  reviewView.classList.add("hidden");
-  settingsView.classList.remove("hidden");
+  showPanel("settings");
   baseUrlInput.focus();
 }
 
 function closeSettings(): void {
-  settingsView.classList.add("hidden");
-  reviewView.classList.remove("hidden");
+  showPanel("review");
+}
+
+async function openDecks(): Promise<void> {
+  showPanel("deck");
+  deckSelect.replaceChildren();
+  document.querySelector<HTMLParagraphElement>("#deck-note")!.textContent = "正在读取牌组…";
+  try {
+    const decks = await invoke<string[]>("list_decks");
+    for (const name of decks) {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      option.selected = name === currentCard?.deckName;
+      deckSelect.append(option);
+    }
+    document.querySelector<HTMLParagraphElement>("#deck-note")!.textContent = decks.length
+      ? "Mac 只需保持 Anki 运行，无需手动进入复习。"
+      : "没有找到牌组。";
+  } catch (error) {
+    document.querySelector<HTMLParagraphElement>("#deck-note")!.textContent = messageFrom(error);
+  }
 }
 
 settingsForm.addEventListener("submit", async (event) => {
@@ -173,6 +211,7 @@ settingsForm.addEventListener("submit", async (event) => {
     await invoke("save_settings", {
       input: { baseUrl: baseUrlInput.value.trim(), apiKey: apiKey || null },
     });
+    localStorage.setItem("window-opacity", opacityInput.value);
     closeSettings();
     await loadCurrent();
   } catch (error) {
@@ -180,12 +219,31 @@ settingsForm.addEventListener("submit", async (event) => {
   }
 });
 
+deckForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!deckSelect.value || busy) return;
+  busy = true;
+  document.querySelector<HTMLParagraphElement>("#deck-note")!.textContent = "正在启动牌组…";
+  try {
+    await invoke("start_deck_review", { name: deckSelect.value });
+    showPanel("review");
+    await loadCurrent();
+  } catch (error) {
+    document.querySelector<HTMLParagraphElement>("#deck-note")!.textContent = messageFrom(error);
+  } finally {
+    busy = false;
+  }
+});
+
 document.querySelector("#settings-button")!.addEventListener("click", () => void openSettings());
+document.querySelector("#deck-button")!.addEventListener("click", () => void openDecks());
 document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
+document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
 document.querySelector("#hide-button")!.addEventListener("click", () => void getCurrentWindow().hide());
+opacityInput.addEventListener("input", () => applyOpacity(opacityInput.value));
 
 window.addEventListener("keydown", (event) => {
-  if (settingsView.classList.contains("hidden") === false) return;
+  if (!settingsView.classList.contains("hidden") || !deckView.classList.contains("hidden")) return;
   if (event.code === "Space") {
     event.preventDefault();
     void showAnswer();
@@ -199,6 +257,7 @@ window.addEventListener("keydown", (event) => {
 });
 
 async function start(): Promise<void> {
+  applyOpacity(localStorage.getItem("window-opacity") ?? "96");
   try {
     const settings = await invoke<PublicSettings>("load_settings");
     if (!settings.baseUrl) {

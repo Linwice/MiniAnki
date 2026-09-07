@@ -1,5 +1,4 @@
 import DOMPurify from "dompurify";
-import { convertFileSrc } from "@tauri-apps/api/core";
 import { invoke } from "@tauri-apps/api/core";
 import type { CachedMedia } from "./types";
 import {
@@ -22,7 +21,7 @@ async function cacheAll(names: string[]): Promise<{ urls: Map<string, string>; m
     uniqueNames.map(async (filename) => {
       try {
         const cached = await invoke<CachedMedia>("cache_media", { filename });
-        return [filename, convertFileSrc(cached.path)] as const;
+        return [filename, cached.dataUrl] as const;
       } catch {
         return null;
       }
@@ -52,9 +51,11 @@ export async function renderCardSide(
   frame: HTMLIFrameElement,
   html: string,
   css: string,
+  sideSounds: string[],
 ): Promise<RenderedSide> {
-  const soundNames = extractSoundFilenames(html).map(normalizeMediaName).filter((name): name is string => Boolean(name));
-  const mediaNames = [...extractHtmlMediaFilenames(html), ...extractCssMediaFilenames(css)];
+  const directSounds = extractSoundFilenames(html).map(normalizeMediaName).filter((name): name is string => Boolean(name));
+  const soundNames = [...new Set([...sideSounds, ...directSounds])];
+  const mediaNames = [...extractHtmlMediaFilenames(html), ...extractCssMediaFilenames(css), ...soundNames];
   const { urls, missing } = await cacheAll(mediaNames);
   const safeHtml = rewriteHtmlMedia(html, urls);
   const rewrittenCss = rewriteCssMedia(css, urls);

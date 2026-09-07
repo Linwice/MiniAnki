@@ -4,14 +4,15 @@
 
 ## 当前范围
 
-- 无边框、置顶、固定尺寸、可拖动窗口。
+- 无边框、置顶、可拖动及自由缩放窗口，背景透明度可调。
 - `Space` 翻面，数字键按当前 Anki 按钮评分，`R` 重播，`Esc` 隐藏。
 - `Alt+Shift+A` 在任意程序中呼出或隐藏窗口。
 - 显示普通 Anki HTML/CSS，支持图片和 `[sound:文件名]` 音频。
 - 媒体首次读取后缓存在 Windows；API key 保存在 Windows Credential Manager。
 - 翻面和评分前校验当前 `cardId`，避免 Mac 端状态改变时误评。
+- Windows 可读取 Mac 上的牌组并直接启动复习。
 
-第一版要求 Mac 上的 Anki 已经进入需要复习的牌组。复杂卡片 JavaScript、第三方插件渲染和下次间隔预览暂不支持。
+Mac 上的 Anki 必须保持运行，但无需手动进入某个牌组或打开卡片。复杂卡片 JavaScript、第三方插件渲染和下次间隔预览暂不支持。
 
 ## 1. 配置 Mac mini
 
@@ -45,7 +46,7 @@ corepack prepare pnpm@11.19.0 --activate
 ./scripts/windows-dev.ps1
 ```
 
-首次打开后填写 Mac 的 Tailscale Serve HTTPS 地址及相同的 AnkiConnect API key。Mac 上进入复习页面，即可从 Windows 小窗操作。
+首次打开后填写 Mac 的 Tailscale Serve HTTPS 地址及相同的 AnkiConnect API key。点击标题栏的牌组按钮即可从 Windows 选择牌组并开始复习。
 
 构建安装包：
 

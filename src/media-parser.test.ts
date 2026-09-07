@@ -9,9 +9,9 @@ import {
 
 describe("media parsing", () => {
   it("extracts and removes Anki sound markers", () => {
-    const html = "猫 [sound:neko.mp3] [sound:例句 01.ogg]";
+    const html = "猫 [sound:neko.mp3] [sound:例句 01.ogg] [anki:play:q:0]";
     expect(extractSoundFilenames(html)).toEqual(["neko.mp3", "例句 01.ogg"]);
-    expect(removeSoundMarkers(html)).toBe("猫  ");
+    expect(removeSoundMarkers(html)).toBe("猫   ");
   });
 
   it("accepts flat Anki filenames and rejects remote or traversing paths", () => {
@@ -26,4 +26,3 @@ describe("media parsing", () => {
     expect(rewriteCssMedia(css, new Map([["paper.png", "asset://paper"]]))).toContain('url("asset://paper")');
   });
 });
-

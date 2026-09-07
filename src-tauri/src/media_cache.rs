@@ -13,6 +13,34 @@ pub struct CachedMedia {
     filename: String,
     path: String,
     sha256: String,
+    #[serde(rename = "dataUrl")]
+    data_url: String,
+}
+
+fn media_type(filename: &str) -> &'static str {
+    match Path::new(filename)
+        .extension()
+        .and_then(OsStr::to_str)
+        .unwrap_or_default()
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "mp3" => "audio/mpeg",
+        "ogg" | "oga" => "audio/ogg",
+        "wav" => "audio/wav",
+        "m4a" => "audio/mp4",
+        "mp4" => "video/mp4",
+        "webm" => "video/webm",
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        "svg" => "image/svg+xml",
+        "woff" => "font/woff",
+        "woff2" => "font/woff2",
+        "ttf" => "font/ttf",
+        _ => "application/octet-stream",
+    }
 }
 
 fn validate_filename(filename: &str) -> Result<(), String> {
@@ -67,6 +95,10 @@ pub async fn cache(
         filename: filename.to_string(),
         path: path.to_string_lossy().into_owned(),
         sha256: format!("{:x}", Sha256::digest(&bytes)),
+        data_url: format!(
+            "data:{};base64,{}",
+            media_type(filename),
+            base64::engine::general_purpose::STANDARD.encode(&bytes)
+        ),
     })
 }
-
