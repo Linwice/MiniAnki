@@ -1,0 +1,80 @@
+:root {
+  color: #e8edf3;
+  background: transparent;
+  font-family: Inter, "Segoe UI", "PingFang SC", sans-serif;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+button, input { font: inherit; }
+
+.app-shell {
+  height: 100vh;
+  background: rgba(23, 27, 34, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
+}
+
+.topbar {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #aeb8c5;
+  font-size: 12px;
+  user-select: none;
+}
+
+.topbar-actions { display: flex; height: 100%; }
+.icon-button {
+  width: 36px;
+  border: 0;
+  color: #aeb8c5;
+  background: transparent;
+  cursor: pointer;
+}
+.icon-button:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+
+.review-view { height: calc(100% - 34px); display: flex; flex-direction: column; }
+.status { padding: 6px 12px 0; min-height: 24px; color: #8f9bab; font-size: 12px; }
+.status.error { color: #ff8e8e; }
+.card-frame { flex: 1; width: 100%; border: 0; background: transparent; color-scheme: dark; }
+.answer-actions { min-height: 42px; display: flex; gap: 6px; padding: 5px 10px; justify-content: center; }
+.answer-actions button {
+  flex: 1;
+  max-width: 94px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  padding: 6px 4px;
+  color: #dce5ef;
+  background: #282f39;
+  cursor: pointer;
+}
+.answer-actions button:hover { background: #374251; }
+.answer-actions button:disabled { opacity: 0.5; cursor: default; }
+.shortcut-hint { padding: 0 10px 6px; text-align: center; color: #687585; font-size: 10px; }
+
+.settings-view { height: calc(100% - 34px); padding: 14px; }
+.settings-view form { display: grid; gap: 10px; }
+.settings-view label { display: grid; gap: 4px; color: #b9c3ce; font-size: 12px; }
+.settings-view input {
+  width: 100%;
+  border: 1px solid #3d4857;
+  border-radius: 6px;
+  padding: 7px 9px;
+  color: white;
+  background: #15191f;
+  outline: none;
+}
+.settings-view input:focus { border-color: #6d9ee9; }
+#settings-note { margin: 0; color: #718093; font-size: 11px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.form-actions button { border: 0; border-radius: 6px; padding: 7px 12px; cursor: pointer; }
+.form-actions .primary { color: white; background: #3478d4; }
+.hidden { display: none !important; }
+

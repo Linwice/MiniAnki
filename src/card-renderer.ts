@@ -1,0 +1,73 @@
+import DOMPurify from "dompurify";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
+import type { CachedMedia } from "./types";
+import {
+  extractCssMediaFilenames,
+  extractHtmlMediaFilenames,
+  extractSoundFilenames,
+  normalizeMediaName,
+  removeSoundMarkers,
+  rewriteCssMedia,
+} from "./media-parser";
+
+export interface RenderedSide {
+  audioUrls: string[];
+  missingMedia: string[];
+}
+
+async function cacheAll(names: string[]): Promise<{ urls: Map<string, string>; missing: string[] }> {
+  const uniqueNames = [...new Set(names)];
+  const entries = await Promise.all(
+    uniqueNames.map(async (filename) => {
+      try {
+        const cached = await invoke<CachedMedia>("cache_media", { filename });
+        return [filename, convertFileSrc(cached.path)] as const;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  const available = entries.filter((entry): entry is readonly [string, string] => entry !== null);
+  const urls = new Map(available);
+  return { urls, missing: uniqueNames.filter((name) => !urls.has(name)) };
+}
+
+function rewriteHtmlMedia(html: string, urls: ReadonlyMap<string, string>): string {
+  const document = new DOMParser().parseFromString(removeSoundMarkers(html), "text/html");
+  for (const element of document.querySelectorAll<HTMLElement>("img[src], audio[src], video[src], source[src]")) {
+    const name = normalizeMediaName(element.getAttribute("src") ?? "");
+    if (name && urls.has(name)) element.setAttribute("src", urls.get(name)!);
+    element.removeAttribute("srcset");
+    element.removeAttribute("autoplay");
+  }
+  return DOMPurify.sanitize(document.body.innerHTML, {
+    FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "button"],
+    FORBID_ATTR: ["srcdoc", "srcset"],
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+  });
+}
+
+export async function renderCardSide(
+  frame: HTMLIFrameElement,
+  html: string,
+  css: string,
+): Promise<RenderedSide> {
+  const soundNames = extractSoundFilenames(html).map(normalizeMediaName).filter((name): name is string => Boolean(name));
+  const mediaNames = [...extractHtmlMediaFilenames(html), ...extractCssMediaFilenames(css)];
+  const { urls, missing } = await cacheAll(mediaNames);
+  const safeHtml = rewriteHtmlMedia(html, urls);
+  const rewrittenCss = rewriteCssMedia(css, urls);
+  const safeCss = rewrittenCss.replaceAll("<", "\\3C ");
+
+  frame.srcdoc = `<!doctype html>
+    <html><head><meta charset="utf-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src asset: http://asset.localhost data:; media-src asset: http://asset.localhost data:; font-src asset: http://asset.localhost data:; style-src 'unsafe-inline'">
+    <style>html,body{margin:0;min-height:100%;background:transparent;color:inherit}.card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}${safeCss}</style>
+    </head><body class="card">${safeHtml}</body></html>`;
+
+  return {
+    audioUrls: soundNames.map((name) => urls.get(name)).filter((url): url is string => Boolean(url)),
+    missingMedia: missing,
+  };
+}

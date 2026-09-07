@@ -1,0 +1,9 @@
+{
+  "apiKey": "CHANGE_TO_A_LONG_RANDOM_VALUE",
+  "apiLogPath": null,
+  "ignoreOriginList": [],
+  "webBindAddress": "127.0.0.1",
+  "webBindPort": 8765,
+  "webCorsOriginList": ["http://localhost"]
+}
+

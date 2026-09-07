@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Anki</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar" data-tauri-drag-region>
+        <span id="deck-name" data-tauri-drag-region>Mini Anki</span>
+        <span class="topbar-actions">
+          <button id="settings-button" class="icon-button" aria-label="设置">⚙</button>
+          <button id="hide-button" class="icon-button" aria-label="隐藏">—</button>
+        </span>
+      </header>
+
+      <section id="review-view" class="review-view">
+        <div id="status" class="status" role="status">正在连接…</div>
+        <iframe id="card-frame" class="card-frame" title="Anki 卡片" sandbox=""></iframe>
+        <div id="answer-actions" class="answer-actions" aria-label="评分按钮"></div>
+        <div class="shortcut-hint">Space 翻面 · R 重播 · Esc 隐藏 · Alt+Shift+A 呼出</div>
+      </section>
+
+      <section id="settings-view" class="settings-view hidden" aria-label="连接设置">
+        <form id="settings-form">
+          <label>
+            Mac 服务地址
+            <input id="base-url" type="url" required placeholder="https://mac-mini.example.ts.net" />
+          </label>
+          <label>
+            AnkiConnect API key
+            <input id="api-key" type="password" autocomplete="new-password" placeholder="留空则保留现有密钥" />
+          </label>
+          <p id="settings-note">地址保存在配置文件；密钥保存在系统凭据库。</p>
+          <div class="form-actions">
+            <button id="cancel-settings" type="button">取消</button>
+            <button type="submit" class="primary">保存并连接</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
+
