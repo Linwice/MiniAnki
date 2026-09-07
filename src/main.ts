@@ -15,8 +15,10 @@ const deckSelect = document.querySelector<HTMLSelectElement>("#deck-select")!;
 const settingsForm = document.querySelector<HTMLFormElement>("#settings-form")!;
 const baseUrlInput = document.querySelector<HTMLInputElement>("#base-url")!;
 const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key")!;
-const opacityInput = document.querySelector<HTMLInputElement>("#opacity")!;
-const opacityValue = document.querySelector<HTMLOutputElement>("#opacity-value")!;
+const textSizeInput = document.querySelector<HTMLInputElement>("#text-size")!;
+const textSizeValue = document.querySelector<HTMLOutputElement>("#text-size-value")!;
+const textOpacityInput = document.querySelector<HTMLInputElement>("#text-opacity")!;
+const textOpacityValue = document.querySelector<HTMLOutputElement>("#text-opacity-value")!;
 
 let currentCard: CurrentCard | null = null;
 let showingAnswer = false;
@@ -51,12 +53,20 @@ async function playAudio(urls = currentAudioUrls): Promise<void> {
   }
 }
 
-function applyOpacity(value: string): void {
+function applyTextSize(value: string): void {
   const parsed = Number(value);
-  const percent = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 96;
-  document.documentElement.style.setProperty("--window-opacity", String(percent / 100));
-  opacityInput.value = String(percent);
-  opacityValue.value = `${percent}%`;
+  const pixels = Number.isFinite(parsed) ? Math.min(40, Math.max(10, parsed)) : 15;
+  surface.style.setProperty("--content-scale", String(pixels / 15));
+  textSizeInput.value = String(pixels);
+  textSizeValue.value = `${pixels}px`;
+}
+
+function applyTextOpacity(value: string): void {
+  const parsed = Number(value);
+  const percent = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 100;
+  surface.style.setProperty("--content-opacity", String(percent / 100));
+  textOpacityInput.value = String(percent);
+  textOpacityValue.value = `${percent}%`;
 }
 
 function showPanel(panel: "review" | "settings" | "deck"): void {
@@ -185,7 +195,6 @@ settingsForm.addEventListener("submit", async (event) => {
     await invoke("save_settings", {
       input: { baseUrl: baseUrlInput.value.trim(), apiKey: apiKey || null },
     });
-    localStorage.setItem("window-opacity", opacityInput.value);
     closeSettings();
     await loadCurrent();
   } catch (error) {
@@ -211,7 +220,14 @@ deckForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
-opacityInput.addEventListener("input", () => applyOpacity(opacityInput.value));
+textSizeInput.addEventListener("input", () => {
+  applyTextSize(textSizeInput.value);
+  localStorage.setItem("text-size", textSizeInput.value);
+});
+textOpacityInput.addEventListener("input", () => {
+  applyTextOpacity(textOpacityInput.value);
+  localStorage.setItem("text-opacity", textOpacityInput.value);
+});
 
 void listen("open-settings", () => void openSettings());
 void listen("open-decks", () => void openDecks());
@@ -231,7 +247,8 @@ window.addEventListener("keydown", (event) => {
 });
 
 async function start(): Promise<void> {
-  applyOpacity(localStorage.getItem("window-opacity") ?? "96");
+  applyTextSize(localStorage.getItem("text-size") ?? "15");
+  applyTextOpacity(localStorage.getItem("text-opacity") ?? "100");
   try {
     const settings = await invoke<PublicSettings>("load_settings");
     if (!settings.baseUrl) {

@@ -9,9 +9,8 @@
   <body>
     <main class="app-shell">
       <section id="review-view" class="review-view">
-        <div id="status" class="status" role="status">正在连接…</div>
-        <div id="card-surface" class="card-surface" aria-label="Anki 卡片"></div>
-        <div class="shortcut-hint">Space 翻面 · R 重播 · Esc 隐藏 · Alt+Shift+A 呼出</div>
+        <div id="status" class="status" role="status"></div>
+        <div id="card-surface" class="card-surface" aria-label="Anki 卡片" data-tauri-drag-region></div>
       </section>
 
       <section id="deck-view" class="panel-view hidden" aria-label="选择牌组">
@@ -37,8 +36,12 @@
             <input id="api-key" type="password" autocomplete="new-password" placeholder="留空则保留现有密钥" />
           </label>
           <label>
-            背景透明度 <output id="opacity-value">96%</output>
-            <input id="opacity" type="range" min="0" max="100" step="1" value="96" />
+            文字大小 <output id="text-size-value">15px</output>
+            <input id="text-size" type="range" min="10" max="40" step="1" value="15" />
+          </label>
+          <label>
+            内容透明度 <output id="text-opacity-value">100%</output>
+            <input id="text-opacity" type="range" min="0" max="100" step="1" value="100" />
           </label>
           <p id="settings-note">地址保存在配置文件；密钥保存在系统凭据库。</p>
           <div class="form-actions">

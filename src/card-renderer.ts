@@ -66,8 +66,9 @@ export async function renderCardSide(
     :host{display:block;min-height:100%;color:inherit}
     .card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}
     img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}
-  </style><style>${safeCss}</style>${safeHtml}<style>
-    :host,.card{background:transparent!important;background-color:transparent!important;background-image:none!important}
+  </style><style>${safeCss}</style><div id="card-content">${safeHtml}</div><style>
+    #card-content{width:calc(100% / var(--content-scale, 1));zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
+    #card-content,#card-content *{background:transparent!important;background-color:transparent!important;background-image:none!important}
   </style>`;
 
   return {
