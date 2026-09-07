@@ -24,6 +24,8 @@ let busy = false;
 let currentAudioUrls: string[] = [];
 let activeAudio: HTMLAudioElement | null = null;
 
+type ResizeDirection = "East" | "North" | "NorthEast" | "NorthWest" | "South" | "SouthEast" | "SouthWest" | "West";
+
 function setStatus(message: string, isError = false): void {
   status.textContent = message;
   status.classList.toggle("error", isError);
@@ -224,6 +226,14 @@ deckForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
+document.querySelectorAll<HTMLElement>(".resize-handle").forEach((handle) => {
+  handle.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const direction = handle.dataset.direction as ResizeDirection;
+    void getCurrentWindow().startResizeDragging(direction);
+  });
+});
 textOpacityInput.addEventListener("input", () => {
   applyTextOpacity(textOpacityInput.value);
   localStorage.setItem("text-opacity", textOpacityInput.value);

@@ -19,6 +19,18 @@ button, input { font: inherit; }
 .status { display: none; }
 .card-surface { flex: 1; min-height: 0; width: 100%; overflow-x: hidden; overflow-y: auto; background: transparent; color-scheme: dark; scrollbar-width: none; }
 .card-surface::-webkit-scrollbar { width: 0; height: 0; }
+.resize-handle { position: fixed; z-index: 10; }
+.north, .south { left: 10px; right: 10px; height: 8px; }
+.east, .west { top: 10px; bottom: 10px; width: 8px; }
+.north { top: 0; cursor: n-resize; }
+.east { right: 0; cursor: e-resize; }
+.south { bottom: 0; cursor: s-resize; }
+.west { left: 0; cursor: w-resize; }
+.north-east, .north-west, .south-east, .south-west { width: 12px; height: 12px; }
+.north-east { top: 0; right: 0; cursor: ne-resize; }
+.north-west { top: 0; left: 0; cursor: nw-resize; }
+.south-east { right: 0; bottom: 0; cursor: se-resize; }
+.south-west { bottom: 0; left: 0; cursor: sw-resize; }
 
 .panel-view { height: 100%; padding: 12px 14px; overflow: auto; background: #171b22; }
 .panel-view form { display: grid; gap: 9px; }
