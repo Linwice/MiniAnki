@@ -64,7 +64,7 @@ export async function renderCardSide(
   frame.srcdoc = `<!doctype html>
     <html><head><meta charset="utf-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src asset: http://asset.localhost data:; media-src asset: http://asset.localhost data:; font-src asset: http://asset.localhost data:; style-src 'unsafe-inline'">
-    <style>html,body{margin:0;min-height:100%;background:transparent;color:inherit}.card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}${safeCss}</style>
+    <style>${safeCss}html,body{margin:0;min-height:100%;color:inherit}.card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}html,body,body.card{background:transparent!important;background-color:transparent!important;background-image:none!important}</style>
     </head><body class="card">${safeHtml}</body></html>`;
 
   return {

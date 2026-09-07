@@ -13,10 +13,7 @@ button, input { font: inherit; }
 .app-shell {
   height: 100vh;
   background: rgba(23, 27, 34, var(--window-opacity));
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.35);
 }
 
 .topbar {

@@ -60,7 +60,8 @@ async function playAudio(urls = currentAudioUrls): Promise<void> {
 }
 
 function applyOpacity(value: string): void {
-  const percent = Math.min(100, Math.max(35, Number(value) || 96));
+  const parsed = Number(value);
+  const percent = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 96;
   document.documentElement.style.setProperty("--window-opacity", String(percent / 100));
   opacityInput.value = String(percent);
   opacityValue.value = `${percent}%`;

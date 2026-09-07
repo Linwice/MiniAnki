@@ -1,6 +1,6 @@
 [package]
 name = "mini-anki"
-version = "0.2.0"
+version = "0.2.1"
 description = "A minimal remote Anki reviewer"
 authors = ["Mini Anki contributors"]
 edition = "2021"
