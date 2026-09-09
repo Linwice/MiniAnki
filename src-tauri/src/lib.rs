@@ -53,6 +53,7 @@ fn show_settings_window(app: &AppHandle) -> Result<(), String> {
         .inner_size(420.0, 290.0)
         .resizable(false)
         .always_on_top(true)
+        .skip_taskbar(true)
         .build()
         .map(|_| ())
         .map_err(|error| format!("无法打开设置窗口：{error}"))
