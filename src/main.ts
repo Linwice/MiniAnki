@@ -7,10 +7,6 @@ import type { CurrentCard, HealthStatus, PublicSettings } from "./types";
 
 const status = document.querySelector<HTMLDivElement>("#status")!;
 const surface = document.querySelector<HTMLDivElement>("#card-surface")!;
-const reviewView = document.querySelector<HTMLElement>("#review-view")!;
-const deckView = document.querySelector<HTMLElement>("#deck-view")!;
-const deckForm = document.querySelector<HTMLFormElement>("#deck-form")!;
-const deckSelect = document.querySelector<HTMLSelectElement>("#deck-select")!;
 
 let currentCard: CurrentCard | null = null;
 let showingAnswer = false;
@@ -67,10 +63,6 @@ function applyTextOpacity(value: string): void {
   surface.style.setProperty("--content-opacity", String(percent / 100));
 }
 
-function showPanel(panel: "review" | "deck"): void {
-  reviewView.classList.toggle("hidden", panel !== "review");
-  deckView.classList.toggle("hidden", panel !== "deck");
-}
 
 async function displaySide(html: string, sounds: string[], autoPlay: boolean): Promise<string[]> {
   if (!currentCard) return [];
@@ -109,7 +101,7 @@ async function loadCurrent(): Promise<void> {
     if (!currentCard) {
       clearCard();
       setStatus("请选择要复习的牌组");
-      await openDecks();
+      await invoke("open_decks_window");
       return;
     }
     const missing = await displaySide(currentCard.question, currentCard.questionSounds, true);
@@ -168,6 +160,7 @@ async function answer(ease: number): Promise<void> {
   }
 }
 
+/*
 async function openDecks(): Promise<void> {
   showPanel("deck");
   deckSelect.replaceChildren();
@@ -206,6 +199,7 @@ deckForm.addEventListener("submit", async (event) => {
 });
 
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
+*/
 surface.addEventListener("play-audio", () => void playAudio());
 surface.addEventListener("mousedown", (event) => {
   if (event.button !== 0 || hitsCardText(event.clientX, event.clientY)) return;
@@ -222,7 +216,7 @@ document.querySelectorAll<HTMLElement>(".resize-handle").forEach((handle) => {
     void getCurrentWindow().startResizeDragging(direction);
   });
 });
-void listen("open-decks", () => void openDecks());
+void listen("deck-started", () => void loadCurrent());
 void listen("increase-text-size", () => adjustTextSize(1));
 void listen("decrease-text-size", () => adjustTextSize(-1));
 void listen<{ value: string }>("text-opacity-change", ({ payload }) => {
@@ -232,7 +226,6 @@ void listen<{ value: string }>("text-opacity-change", ({ payload }) => {
 void listen("settings-saved", () => void loadCurrent());
 
 window.addEventListener("keydown", (event) => {
-  if (!deckView.classList.contains("hidden")) return;
   if (event.code === "Space") {
     event.preventDefault();
     void showAnswer();
