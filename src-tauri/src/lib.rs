@@ -41,6 +41,18 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
+fn sync_then_exit(app: &AppHandle) {
+    let base_url = app.state::<AppState>().base_url();
+    let client = app.state::<AppState>().client.clone();
+    let app_handle = app.clone();
+    tauri::async_runtime::spawn(async move {
+        if let Ok(base_url) = base_url {
+            let _ = client.sync(&base_url).await;
+        }
+        app_handle.exit(0);
+    });
+}
+
 fn show_settings_window(app: &AppHandle) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("settings") {
         let _ = window.unminimize();
@@ -191,7 +203,7 @@ pub fn run() {
             let increase_text_item = MenuItem::with_id(app, "increase-text", "放大文字", true, None::<&str>)?;
             let decrease_text_item = MenuItem::with_id(app, "decrease-text", "缩小文字", true, None::<&str>)?;
             let hide_item = MenuItem::with_id(app, "hide", "隐藏窗口", true, None::<&str>)?;
-            let quit_item = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+            let quit_item = MenuItem::with_id(app, "quit", "同步后退出", true, None::<&str>)?;
             let menu = Menu::with_items(
                 app,
                 &[
@@ -222,7 +234,7 @@ pub fn run() {
                             let _ = window.hide();
                         }
                     }
-                    "quit" => app.exit(0),
+                    "quit" => sync_then_exit(app),
                     _ => {}
                 })
                 .build(app)?;

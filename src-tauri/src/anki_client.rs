@@ -98,6 +98,10 @@ fn unique(names: Vec<String>) -> Vec<String> {
 }
 
 impl AnkiClient {
+    pub async fn sync(&self, base_url: &str) -> Result<(), String> {
+        self.invoke(base_url, "sync", json!({})).await
+    }
+
     pub fn new() -> Result<Self, String> {
         let http = Client::builder()
             .connect_timeout(std::time::Duration::from_secs(5))

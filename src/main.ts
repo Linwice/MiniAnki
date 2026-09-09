@@ -206,6 +206,7 @@ deckForm.addEventListener("submit", async (event) => {
 });
 
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
+surface.addEventListener("play-audio", () => void playAudio());
 surface.addEventListener("mousedown", (event) => {
   if (event.button !== 0 || hitsCardText(event.clientX, event.clientY)) return;
   const target = event.composedPath()[0];
