@@ -8,7 +8,7 @@ use std::sync::RwLock;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
-    AppHandle, Emitter, Manager, State,
+    AppHandle, Emitter, Manager, State, WebviewUrl, WebviewWindowBuilder,
 };
 use tauri_plugin_global_shortcut::{Code, Modifiers, Shortcut, ShortcutState};
 
@@ -41,6 +41,23 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
+fn show_settings_window(app: &AppHandle) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("settings") {
+        let _ = window.unminimize();
+        let _ = window.show();
+        let _ = window.set_focus();
+        return Ok(());
+    }
+    WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
+        .title("Mini Anki 设置")
+        .inner_size(420.0, 290.0)
+        .resizable(false)
+        .always_on_top(true)
+        .build()
+        .map(|_| ())
+        .map_err(|error| format!("无法打开设置窗口：{error}"))
+}
+
 fn show_panel_from_tray(app: &AppHandle, event: &str) {
     show_main_window(app);
     if let Some(window) = app.get_webview_window("main") {
@@ -55,6 +72,11 @@ fn load_settings(state: State<'_, AppState>) -> Result<settings::PublicSettings,
         base_url: current.base_url.clone(),
         has_api_key: settings::api_key().is_some(),
     })
+}
+
+#[tauri::command]
+fn open_settings_window(app: AppHandle) -> Result<(), String> {
+    show_settings_window(&app)
 }
 
 #[tauri::command]
@@ -188,7 +210,9 @@ pub fn run() {
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id().as_ref() {
                     "show" => show_main_window(app),
-                    "settings" => show_panel_from_tray(app, "open-settings"),
+                    "settings" => {
+                        let _ = show_settings_window(app);
+                    }
                     "decks" => show_panel_from_tray(app, "open-decks"),
                     "increase-text" => show_panel_from_tray(app, "increase-text-size"),
                     "decrease-text" => show_panel_from_tray(app, "decrease-text-size"),
@@ -205,6 +229,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             load_settings,
+            open_settings_window,
             save_settings,
             health_check,
             list_decks,

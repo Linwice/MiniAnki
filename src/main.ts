@@ -8,15 +8,9 @@ import type { CurrentCard, HealthStatus, PublicSettings } from "./types";
 const status = document.querySelector<HTMLDivElement>("#status")!;
 const surface = document.querySelector<HTMLDivElement>("#card-surface")!;
 const reviewView = document.querySelector<HTMLElement>("#review-view")!;
-const settingsView = document.querySelector<HTMLElement>("#settings-view")!;
 const deckView = document.querySelector<HTMLElement>("#deck-view")!;
 const deckForm = document.querySelector<HTMLFormElement>("#deck-form")!;
 const deckSelect = document.querySelector<HTMLSelectElement>("#deck-select")!;
-const settingsForm = document.querySelector<HTMLFormElement>("#settings-form")!;
-const baseUrlInput = document.querySelector<HTMLInputElement>("#base-url")!;
-const apiKeyInput = document.querySelector<HTMLInputElement>("#api-key")!;
-const textOpacityInput = document.querySelector<HTMLInputElement>("#text-opacity")!;
-const textOpacityValue = document.querySelector<HTMLOutputElement>("#text-opacity-value")!;
 
 let currentCard: CurrentCard | null = null;
 let showingAnswer = false;
@@ -71,13 +65,10 @@ function applyTextOpacity(value: string): void {
   const parsed = Number(value);
   const percent = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 100;
   surface.style.setProperty("--content-opacity", String(percent / 100));
-  textOpacityInput.value = String(percent);
-  textOpacityValue.value = `${percent}%`;
 }
 
-function showPanel(panel: "review" | "settings" | "deck"): void {
+function showPanel(panel: "review" | "deck"): void {
   reviewView.classList.toggle("hidden", panel !== "review");
-  settingsView.classList.toggle("hidden", panel !== "settings");
   deckView.classList.toggle("hidden", panel !== "deck");
 }
 
@@ -161,18 +152,6 @@ async function answer(ease: number): Promise<void> {
   }
 }
 
-async function openSettings(): Promise<void> {
-  const settings = await invoke<PublicSettings>("load_settings");
-  baseUrlInput.value = settings.baseUrl;
-  apiKeyInput.value = "";
-  showPanel("settings");
-  baseUrlInput.focus();
-}
-
-function closeSettings(): void {
-  showPanel("review");
-}
-
 async function openDecks(): Promise<void> {
   showPanel("deck");
   deckSelect.replaceChildren();
@@ -194,20 +173,6 @@ async function openDecks(): Promise<void> {
   }
 }
 
-settingsForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const apiKey = apiKeyInput.value.trim();
-  try {
-    await invoke("save_settings", {
-      input: { baseUrl: baseUrlInput.value.trim(), apiKey: apiKey || null },
-    });
-    closeSettings();
-    await loadCurrent();
-  } catch (error) {
-    document.querySelector<HTMLParagraphElement>("#settings-note")!.textContent = messageFrom(error);
-  }
-});
-
 deckForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!deckSelect.value || busy) return;
@@ -224,8 +189,11 @@ deckForm.addEventListener("submit", async (event) => {
   }
 });
 
-document.querySelector("#cancel-settings")!.addEventListener("click", closeSettings);
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
+surface.addEventListener("mousedown", (event) => {
+  if (event.button !== 0 || event.composedPath()[0] !== surface) return;
+  void getCurrentWindow().startDragging();
+});
 document.querySelectorAll<HTMLElement>(".resize-handle").forEach((handle) => {
   handle.addEventListener("mousedown", (event) => {
     if (event.button !== 0) return;
@@ -234,18 +202,17 @@ document.querySelectorAll<HTMLElement>(".resize-handle").forEach((handle) => {
     void getCurrentWindow().startResizeDragging(direction);
   });
 });
-textOpacityInput.addEventListener("input", () => {
-  applyTextOpacity(textOpacityInput.value);
-  localStorage.setItem("text-opacity", textOpacityInput.value);
-});
-
-void listen("open-settings", () => void openSettings());
 void listen("open-decks", () => void openDecks());
 void listen("increase-text-size", () => adjustTextSize(1));
 void listen("decrease-text-size", () => adjustTextSize(-1));
+void listen<{ value: string }>("text-opacity-change", ({ payload }) => {
+  applyTextOpacity(payload.value);
+  localStorage.setItem("text-opacity", payload.value);
+});
+void listen("settings-saved", () => void loadCurrent());
 
 window.addEventListener("keydown", (event) => {
-  if (!settingsView.classList.contains("hidden") || !deckView.classList.contains("hidden")) return;
+  if (!deckView.classList.contains("hidden")) return;
   if (event.code === "Space") {
     event.preventDefault();
     void showAnswer();
@@ -264,7 +231,8 @@ async function start(): Promise<void> {
   try {
     const settings = await invoke<PublicSettings>("load_settings");
     if (!settings.baseUrl) {
-      await openSettings();
+      await invoke("open_settings_window");
+      await getCurrentWindow().hide();
       return;
     }
     const health = await invoke<HealthStatus>("health_check");

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Anki 设置</title>
+    <script type="module" src="/src/settings.ts"></script>
+  </head>
+  <body>
+    <main class="panel-view settings-window" aria-label="连接设置">
+      <form id="settings-form">
+        <label>
+          Mac 服务地址
+          <input id="base-url" type="url" required placeholder="https://mac-mini.example.ts.net" />
+        </label>
+        <label>
+          AnkiConnect API key
+          <input id="api-key" type="password" autocomplete="new-password" placeholder="留空则保留现有密钥" />
+        </label>
+        <label>
+          内容透明度 <output id="text-opacity-value">100%</output>
+          <input id="text-opacity" type="range" min="0" max="100" step="1" value="100" />
+        </label>
+        <p id="settings-note">地址保存在配置文件；密钥保存在系统凭据库。</p>
+        <div class="form-actions">
+          <button id="close-settings" type="button">关闭</button>
+          <button type="submit" class="primary">保存并连接</button>
+        </div>
+      </form>
+    </main>
+  </body>
+</html>

@@ -10,6 +10,7 @@
 - `Space` 翻面，数字键按当前 Anki 按钮评分，`R` 重播，`Esc` 隐藏。
 - `Ctrl+Alt+X` 在任意程序中呼出或隐藏窗口。
 - Windows 托盘图标右键可打开设置、选择牌组、显示、隐藏或退出。
+- 设置会在独立窗口中打开，不会覆盖复习窗口。
 - 显示普通 Anki HTML/CSS，支持图片和 `[sound:文件名]` 音频。
 - 媒体首次读取后缓存在 Windows；API key 保存在 Windows Credential Manager。
 - 翻面和评分前校验当前 `cardId`，避免 Mac 端状态改变时误评。

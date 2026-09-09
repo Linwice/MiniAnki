@@ -10,7 +10,7 @@
     <main class="app-shell">
       <section id="review-view" class="review-view">
         <div id="status" class="status" role="status"></div>
-        <div id="card-surface" class="card-surface" aria-label="Anki 卡片" data-tauri-drag-region></div>
+        <div id="card-surface" class="card-surface" aria-label="Anki 卡片"></div>
       </section>
 
       <section id="deck-view" class="panel-view hidden" aria-label="选择牌组">
@@ -25,27 +25,6 @@
         </form>
       </section>
 
-      <section id="settings-view" class="panel-view hidden" aria-label="连接设置">
-        <form id="settings-form">
-          <label>
-            Mac 服务地址
-            <input id="base-url" type="url" required placeholder="https://mac-mini.example.ts.net" />
-          </label>
-          <label>
-            AnkiConnect API key
-            <input id="api-key" type="password" autocomplete="new-password" placeholder="留空则保留现有密钥" />
-          </label>
-          <label>
-            内容透明度 <output id="text-opacity-value">100%</output>
-            <input id="text-opacity" type="range" min="0" max="100" step="1" value="100" />
-          </label>
-          <p id="settings-note">地址保存在配置文件；密钥保存在系统凭据库。</p>
-          <div class="form-actions">
-            <button id="cancel-settings" type="button">取消</button>
-            <button type="submit" class="primary">保存并连接</button>
-          </div>
-        </form>
-      </section>
     </main>
     <div class="resize-handle north" data-direction="North" aria-hidden="true"></div>
     <div class="resize-handle east" data-direction="East" aria-hidden="true"></div>
