@@ -106,6 +106,7 @@ impl AnkiClient {
         let http = Client::builder()
             .connect_timeout(std::time::Duration::from_secs(5))
             .timeout(std::time::Duration::from_secs(20))
+            .pool_max_idle_per_host(0)
             .build()
             .map_err(|error| format!("无法创建网络客户端：{error}"))?;
         Ok(Self { http })
@@ -126,7 +127,7 @@ impl AnkiClient {
             .json(&payload)
             .send()
             .await
-            .map_err(|error| format!("无法连接 Mac 上的 Anki：{error}"))?;
+            .map_err(|error| format!("无法连接 Anki：{error}"))?;
         if !response.status().is_success() {
             return Err(format!("Anki 服务返回 HTTP {}", response.status()));
         }
