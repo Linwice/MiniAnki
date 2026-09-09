@@ -84,6 +84,22 @@ function clearCard(): void {
   surface.shadowRoot?.replaceChildren();
 }
 
+function hitsCardText(x: number, y: number): boolean {
+  const root = surface.shadowRoot;
+  if (!root) return false;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let node: Text | null;
+  while ((node = walker.nextNode() as Text | null)) {
+    if (!node.textContent?.trim()) continue;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    if ([...range.getClientRects()].some((rect) => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function loadCurrent(): Promise<void> {
   busy = true;
   setStatus("正在读取当前卡片…");
@@ -191,7 +207,10 @@ deckForm.addEventListener("submit", async (event) => {
 
 document.querySelector("#cancel-deck")!.addEventListener("click", () => showPanel("review"));
 surface.addEventListener("mousedown", (event) => {
-  if (event.button !== 0 || event.composedPath()[0] !== surface) return;
+  if (event.button !== 0 || hitsCardText(event.clientX, event.clientY)) return;
+  const target = event.composedPath()[0];
+  if (target instanceof HTMLElement && target.closest("a, audio, button, input, select, textarea, video")) return;
+  event.preventDefault();
   void getCurrentWindow().startDragging();
 });
 document.querySelectorAll<HTMLElement>(".resize-handle").forEach((handle) => {
