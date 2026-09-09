@@ -10,6 +10,13 @@
     <main class="panel-view settings-window" aria-label="连接设置">
       <form id="settings-form">
         <label>
+          连接方式
+          <select id="connection-mode">
+            <option value="remote">远程 Mac（Tailscale）</option>
+            <option value="local">本机 AnkiConnect</option>
+          </select>
+        </label>
+        <label id="remote-address-row">
           Mac 服务地址
           <input id="base-url" type="url" required placeholder="https://mac-mini.example.ts.net" />
         </label>

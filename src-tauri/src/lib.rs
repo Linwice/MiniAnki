@@ -62,7 +62,7 @@ fn show_settings_window(app: &AppHandle) -> Result<(), String> {
     }
     WebviewWindowBuilder::new(app, "settings", WebviewUrl::App("settings.html".into()))
         .title("Mini Anki 设置")
-        .inner_size(420.0, 290.0)
+        .inner_size(420.0, 330.0)
         .resizable(false)
         .always_on_top(true)
         .skip_taskbar(true)
