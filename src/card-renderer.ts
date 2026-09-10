@@ -72,7 +72,7 @@ export async function renderCardSide(
     #play-audio{margin:4px 12px;padding:0;border:0;color:#000;background:transparent;font:inherit;cursor:pointer}
   </style><style>${safeCss}</style><div id="card-content" class="card">${safeHtml}</div><style>
     #card-content{zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
-    #card-content,#card-content *{background-color:transparent!important}
+    #card-content,#card-content *{color:#000!important;background-color:transparent!important}
   </style>${audioControl}`;
   root.querySelector("#play-audio")?.addEventListener("click", () => surface.dispatchEvent(new Event("play-audio")));
 
