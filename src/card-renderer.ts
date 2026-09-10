@@ -70,9 +70,9 @@ export async function renderCardSide(
     .card{box-sizing:border-box;padding:12px;overflow-wrap:anywhere}
     img,video{max-width:100%;max-height:130px;object-fit:contain}audio{max-width:100%}
     #play-audio{margin:4px 12px;padding:0;border:0;color:#000;background:transparent;font:inherit;cursor:pointer}
-  </style><style>${safeCss}</style><div id="card-content">${safeHtml}</div><style>
+  </style><style>${safeCss}</style><div id="card-content" class="card">${safeHtml}</div><style>
     #card-content{zoom:var(--content-scale, 1);opacity:var(--content-opacity, 1)}
-    #card-content,#card-content *{color:#000!important;background:transparent!important;background-color:transparent!important;background-image:none!important}
+    #card-content,#card-content *{background-color:transparent!important}
   </style>${audioControl}`;
   root.querySelector("#play-audio")?.addEventListener("click", () => surface.dispatchEvent(new Event("play-audio")));
 
